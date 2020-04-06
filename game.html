@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        canvas {
+            border: 1px solid #d3d3d3;
+            background-color: royalblue;
+
+        }
+
+        body {
+            margin: 0;
+        }
+
+    </style>
+</head>
+<!--Game canvas-->
+<!--https://www.w3schools.com/graphics/tryit.asp filename=trygame_canvas-->
+
+<body onload="startGame()">
+    <script>
+        alert("Use the keyframes to avoid the shark!");
+
+        var mermaid;
+        var shark;
+        var octopus;
+        var fish;
+
+        function startGame() {
+            myGameArea.start();
+            /*I changed the mermaid size and inserted .png img*/
+            /*https://www.w3schools.com/graphics/tryit.asp?filename=trygame_image*/
+            mermaid = new component(200, 200, "images/mermaid.png", 10, 120, "image");
+            /*Add obstacle---https://www.w3schools.com/graphics/tryit.asp?filename=trygame_obstacle*/
+            shark = new component(100, 100, "images/shark.png", 1000, 120, "image");
+            octopus = new component(100, 100, "images/octopus.png", 1200, 350, "image");
+            fish = new component(100, 100, "images/fish.png", 1500, 550, "image");
+
+        }
+
+        var myGameArea = {
+            canvas: document.createElement("canvas"),
+            start: function() {
+                /*To expand the canvas size I used innerWidth and innerHeight*/
+                this.canvas.width = innerWidth;
+                this.canvas.height = innerHeight;
+                this.context = this.canvas.getContext("2d");
+                document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+                /*For the multiple obstacles---https://www.w3schools.com/graphics/tryit.asp?filename=trygame_obstacles*/
+                this.frameNo = 0;
+                /*https://www.w3schools.com/graphics/tryit.asp?filename=trygame_controllers_keys*/
+                this.interval = setInterval(updateGameArea, 20);
+                window.addEventListener('keydown', function(e) {
+                    myGameArea.key = e.keyCode;
+                })
+                window.addEventListener('keyup', function(e) {
+                    myGameArea.key = false;
+                })
+            },
+            clear: function() {
+                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            },
+            /*Stop the game when mermaid hits shark-https://www.w3schools.com/graphics/tryit.asp?filename=trygame_obstacle_hit*/
+            stop: function() {
+                clearInterval(this.interval);
+            }
+
+        }
+
+
+
+
+        /*https://www.w3schools.com/graphics/tryit.asp?filename=trygame_image*/
+        function component(width, height, color, x, y, type) {
+            this.type = type;
+            if (type == "image") {
+                this.image = new Image();
+                this.image.src = color; /*"images/mermaid.png";*/
+            }
+            this.width = width;
+            this.height = height;
+            this.speedX = 0;
+            this.speedY = 0;
+            this.x = x;
+            this.y = y;
+            this.update = function() {
+                ctx = myGameArea.context;
+                if (type == "image") {
+                    ctx.drawImage(this.image,
+                        this.x,
+                        this.y,
+                        this.width, this.height);
+                } else {
+                    ctx.fillStyle = color;
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                }
+            }
+            this.newPos = function() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+            }
+            /*Stop the game when mermaid hits shark-https://www.w3schools.com/graphics/tryit.asp?filename=trygame_obstacle_hit*/
+            this.crashWith = function(otherobj) {
+                var myleft = this.x;
+                var myright = this.x + (this.width);
+                var mytop = this.y;
+                var mybottom = this.y + (this.height);
+                var otherleft = otherobj.x;
+                var otherright = otherobj.x + (otherobj.width);
+                var othertop = otherobj.y;
+                var otherbottom = otherobj.y + (otherobj.height);
+                var crash = true;
+                if ((mybottom < othertop) ||
+                    (mytop > otherbottom) ||
+                    (myright < otherleft) ||
+                    (myleft > otherright)) {
+                    crash = false;
+                }
+                return crash;
+            }
+
+        }
+
+        function updateGameArea() {
+            myGameArea.clear();
+            mermaid.speedX = 0;
+            mermaid.speedY = 0;
+            /*Change the velocity of mermaid*/
+            if (myGameArea.key && myGameArea.key == 37) {
+                mermaid.speedX = -5;
+            }
+            if (myGameArea.key && myGameArea.key == 39) {
+                mermaid.speedX = 5;
+            }
+            if (myGameArea.key && myGameArea.key == 38) {
+                mermaid.speedY = -5;
+            }
+            if (myGameArea.key && myGameArea.key == 40) {
+                mermaid.speedY = 5;
+            }
+            mermaid.newPos();
+            mermaid.update();
+            /*Stop the game when mermaid hits shark-https://www.w3schools.com/graphics/tryit.asp?filename=trygame_obstacle_hit*/
+            if (mermaid.crashWith(shark)) {
+                myGameArea.stop();
+            } else {
+                /*Change the velocity of obstacles*/
+                myGameArea.clear();
+                shark.x -= 3;
+                shark.update();
+                octopus.x -= 5;
+                octopus.update();
+                fish.x -= 3;
+                fish.update();
+                mermaid.x += mermaid.speedX;
+                mermaid.y += mermaid.speedY;
+                mermaid.update();
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>
